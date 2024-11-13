@@ -18,6 +18,7 @@ package org.springframework.ai.model;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +51,8 @@ import com.github.victools.jsonschema.module.swagger2.Swagger2Module;
 import org.springframework.ai.util.JacksonUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -366,6 +369,41 @@ public abstract class ModelOptionsUtils {
 		return node.toPrettyString();
 	}
 
+	/**
+	 * Generates JSON Schema (version 2020_12) for the given class.
+	 * @param clazz the class to generate JSON Schema for.
+	 * @param toUpperCaseTypeValues if true, the type values are converted to upper case.
+	 * @return the generated JSON Schema as a String.
+	 */
+	public static String getJsonSchema(ResolvableType inputType, boolean toUpperCaseTypeValues) {
+
+		if (SCHEMA_GENERATOR_CACHE.get() == null) {
+
+			JacksonModule jacksonModule = new JacksonModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED);
+			Swagger2Module swaggerModule = new Swagger2Module();
+
+			SchemaGeneratorConfigBuilder configBuilder = new SchemaGeneratorConfigBuilder(SchemaVersion.DRAFT_2020_12,
+					OptionPreset.PLAIN_JSON)
+				.with(Option.EXTRA_OPEN_API_FORMAT_VALUES)
+				.with(Option.PLAIN_DEFINITION_KEYS)
+				.with(swaggerModule)
+				.with(jacksonModule);
+
+			SchemaGeneratorConfig config = configBuilder.build();
+			SchemaGenerator generator = new SchemaGenerator(config);
+			SCHEMA_GENERATOR_CACHE.compareAndSet(null, generator);
+		}
+
+		ObjectNode node = SCHEMA_GENERATOR_CACHE.get()
+			.generateSchema(CustomizedTypeReference.forType(inputType).getType());
+		if (toUpperCaseTypeValues) { // Required for OpenAPI 3.0 (at least Vertex AI
+			// version of it).
+			toUpperCaseTypeValues(node);
+		}
+
+		return node.toPrettyString();
+	}
+
 	public static void toUpperCaseTypeValues(ObjectNode node) {
 		if (node == null) {
 			return;
@@ -403,6 +441,29 @@ public abstract class ModelOptionsUtils {
 	 */
 	public static <T> T mergeOption(T runtimeValue, T defaultValue) {
 		return ObjectUtils.isEmpty(runtimeValue) ? defaultValue : runtimeValue;
+	}
+
+	public static class CustomizedTypeReference<T> extends TypeReference<T> {
+
+		private final Type type;
+
+		public CustomizedTypeReference(ParameterizedTypeReference<T> typeRef) {
+			this.type = typeRef.getType();
+		}
+
+		@Override
+		public Type getType() {
+			return this.type;
+		}
+
+		public static <T> CustomizedTypeReference<T> forType(ParameterizedTypeReference<T> typeRef) {
+			return new CustomizedTypeReference<>(typeRef);
+		}
+
+		public static <T> CustomizedTypeReference<T> forType(ResolvableType resolvableType) {
+			return new CustomizedTypeReference<>(ParameterizedTypeReference.forType(resolvableType.getType()));
+		}
+
 	}
 
 }

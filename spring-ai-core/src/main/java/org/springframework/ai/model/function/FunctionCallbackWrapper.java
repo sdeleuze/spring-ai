@@ -28,6 +28,7 @@ import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.model.function.FunctionCallbackContext.SchemaType;
 import org.springframework.ai.util.JacksonUtils;
+import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 
 /**
@@ -38,13 +39,18 @@ import org.springframework.util.Assert;
  *
  * @author Christian Tzolov
  * @author Sebastien Deleuze
- *
  */
 public final class FunctionCallbackWrapper<I, O> extends AbstractFunctionCallback<I, O> {
 
 	private final BiFunction<I, ToolContext, O> biFunction;
 
 	private FunctionCallbackWrapper(String name, String description, String inputTypeSchema, Class<I> inputType,
+			Function<O, String> responseConverter, ObjectMapper objectMapper, BiFunction<I, ToolContext, O> function) {
+		this(name, description, inputTypeSchema, ResolvableType.forClass(inputType), responseConverter, objectMapper,
+				function);
+	}
+
+	public FunctionCallbackWrapper(String name, String description, String inputTypeSchema, ResolvableType inputType,
 			Function<O, String> responseConverter, ObjectMapper objectMapper, BiFunction<I, ToolContext, O> function) {
 		super(name, description, inputTypeSchema, inputType, responseConverter, objectMapper);
 		Assert.notNull(function, "Function must not be null");
@@ -64,6 +70,10 @@ public final class FunctionCallbackWrapper<I, O> extends AbstractFunctionCallbac
 		return this.biFunction.apply(input, context);
 	}
 
+	/**
+	 * @deprecated in favor of {@link DefaultFunctionCallbackBuilder}
+	 */
+	@Deprecated
 	public static class Builder<I, O> {
 
 		private final BiFunction<I, ToolContext, O> biFunction;

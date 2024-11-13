@@ -16,7 +16,13 @@
 
 package org.springframework.ai.model.function;
 
+import java.util.function.Function;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.ai.chat.model.ToolContext;
+import org.springframework.ai.model.function.FunctionCallbackContext.SchemaType;
+import org.springframework.core.ResolvableType;
 
 /**
  * Represents a model function call handler. Implementations are registered with the
@@ -71,6 +77,64 @@ public interface FunctionCallback {
 			throw new UnsupportedOperationException("Function context is not supported!");
 		}
 		return call(functionInput);
+	}
+
+	interface Builder<I, O> {
+
+		/**
+		 * Function name. Unique within the model.
+		 */
+		Builder<I, O> name(String name);
+
+		/**
+		 * Function description. This description is used by the model do decide if the
+		 * function should be called or not.
+		 */
+		Builder<I, O> description(String description);
+
+		/**
+		 * Function input type. The input type is used to validate the function input
+		 * arguments.
+		 */
+		Builder<I, O> inputType(Class<?> inputType);
+
+		/**
+		 * Function input type. The input type is used to validate the function input
+		 * arguments. The {@link ResolvableType} can be used to provide a generic type
+		 * with parameterized types.
+		 */
+		Builder<I, O> inputType(ResolvableType inputType);
+
+		/**
+		 * Specifies what {@link SchemaType} is used by the AI model to validate the
+		 * function input arguments. Most models use JSON Schema, except Vertex AI that
+		 * uses OpenAPI types.
+		 */
+		Builder<I, O> schemaType(SchemaType schemaType);
+
+		/**
+		 * Function response converter. The default implementation converts the output
+		 * into String before sending it to the Model. Provide a custom function
+		 * responseConverter implementation to override this.
+		 */
+		Builder<I, O> responseConverter(Function<O, String> responseConverter);
+
+		/**
+		 * You can provide the Input Type Schema directly. In this case it won't be
+		 * generated from the inputType.
+		 */
+		Builder<I, O> inputTypeSchema(String inputTypeSchema);
+
+		/**
+		 * Custom object mapper for JSON operations.
+		 */
+		Builder<I, O> objectMapper(ObjectMapper objectMapper);
+
+		/**
+		 * Builds the {@link FunctionCallback} instance.
+		 */
+		FunctionCallback build();
+
 	}
 
 }
