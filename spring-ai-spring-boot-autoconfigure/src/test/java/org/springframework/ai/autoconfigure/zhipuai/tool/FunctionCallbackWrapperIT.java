@@ -33,7 +33,6 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackWrapper;
 import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiChatOptions;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -112,10 +111,11 @@ public class FunctionCallbackWrapperIT {
 		@Bean
 		public FunctionCallback weatherFunctionInfo() {
 
-			return FunctionCallbackWrapper.builder(new MockWeatherService())
-				.withName("WeatherInfo")
-				.withDescription("Get the weather in location")
-				.withResponseConverter(response -> "" + response.temp() + response.unit())
+			return FunctionCallback.builder(new MockWeatherService())
+				.name("WeatherInfo")
+				.description("Get the weather in location")
+				.inputType(MockWeatherService.Request.class)
+				.responseConverter(response -> "" + response.temp() + response.unit())
 				.build();
 		}
 

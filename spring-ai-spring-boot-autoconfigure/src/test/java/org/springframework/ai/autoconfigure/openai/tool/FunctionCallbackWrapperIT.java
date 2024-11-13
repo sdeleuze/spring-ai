@@ -32,7 +32,6 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackWrapper;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi.ChatModel;
@@ -107,10 +106,11 @@ public class FunctionCallbackWrapperIT {
 		@Bean
 		public FunctionCallback weatherFunctionInfo() {
 
-			return FunctionCallbackWrapper.builder(new MockWeatherService())
-				.withName("WeatherInfo")
-				.withDescription("Get the weather in location")
-				.withResponseConverter(response -> "" + response.temp() + response.unit())
+			return FunctionCallback.builder(new MockWeatherService())
+				.name("WeatherInfo")
+				.description("Get the weather in location")
+				.responseConverter(response -> "" + response.temp() + response.unit())
+				.inputType(MockWeatherService.Request.class)
 				.build();
 		}
 

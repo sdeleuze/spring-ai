@@ -15,7 +15,6 @@
 */
 package org.springframework.ai.model.function;
 
-import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -62,49 +61,18 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 		.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 		.build();
 
-	//
-	/**
-	 * Object instance that contains the method to be invoked. If the method is static
-	 * this object can be null.
-	 */
-	private final Object functionObject;
-
-	/**
-	 * The method to be invoked.
-	 */
-	private final Method method;
-
 	public DefaultFunctionCallbackBuilder(Function<I, O> function) {
 		this.function = function;
 		this.biFunction = null;
-		this.functionObject = null;
-		this.method = null;
 	}
 
 	public DefaultFunctionCallbackBuilder(BiFunction<I, ToolContext, O> biFunction) {
 		this.function = null;
 		this.biFunction = biFunction;
-		this.functionObject = null;
-		this.method = null;
-	}
-
-	public DefaultFunctionCallbackBuilder(Method method) {
-		this.function = null;
-		this.biFunction = null;
-		this.functionObject = null;
-		this.method = method;
-	}
-
-	public DefaultFunctionCallbackBuilder(Object functionObject, Method method) {
-		this.function = null;
-		this.biFunction = null;
-		this.functionObject = functionObject;
-		this.method = method;
 	}
 
 	@Override
 	public Builder<I, O> name(String name) {
-		Assert.isNull(this.method, "Name can not be set when using Method");
 		Assert.hasText(name, "Name must not be empty");
 		this.name = name;
 		return this;
@@ -119,7 +87,6 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 
 	@Override
 	public Builder<I, O> inputType(Class<?> inputType) {
-		Assert.isNull(this.method, "InputType can not be set when using Method");
 		Assert.notNull(inputType, "InputType must not be null");
 		this.inputType = ResolvableType.forClass(inputType);
 		return this;
@@ -127,7 +94,6 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 
 	@Override
 	public Builder<I, O> inputType(ResolvableType inputType) {
-		Assert.isNull(this.method, "InputType can not be set when using Method");
 		Assert.notNull(inputType, "InputType must not be null");
 		this.inputType = inputType;
 		return this;
@@ -149,7 +115,6 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 
 	@Override
 	public Builder<I, O> inputTypeSchema(String inputTypeSchema) {
-		Assert.isNull(this.method, "InputType can not be set when using Method");
 		Assert.hasText(inputTypeSchema, "InputTypeSchema must not be empty");
 		this.inputTypeSchema = inputTypeSchema;
 		return this;
@@ -167,40 +132,7 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 
 		Assert.hasText(this.description, "Description must not be empty");
 		Assert.notNull(this.objectMapper, "ObjectMapper must not be null");
-
-		if (this.method != null) {
-			return new MethodFunctionCallback(this.functionObject, this.method, this.description, this.objectMapper);
-		}
-
 		Assert.hasText(this.name, "Name must not be empty");
-		Assert.notNull(this.responseConverter, "ResponseConverter must not be null");
-		Assert.notNull(this.inputType, "InputType must not be null");
-
-		if (this.inputTypeSchema == null) {
-			boolean upperCaseTypeValues = this.schemaType == SchemaType.OPEN_API_SCHEMA;
-			this.inputTypeSchema = ModelOptionsUtils.getJsonSchema(this.inputType, upperCaseTypeValues);
-		}
-
-		BiFunction<I, ToolContext, O> finalBiFunction = (this.biFunction != null) ? this.biFunction
-				: (request, context) -> this.function.apply(request);
-
-		return new FunctionCallbackWrapper<>(this.name, this.description, this.inputTypeSchema, this.inputType,
-				this.responseConverter, this.objectMapper, finalBiFunction);
-	}
-
-	public FunctionCallback build2() {
-
-		Assert.hasText(this.name, "Name must not be empty");
-		Assert.hasText(this.description, "Description must not be empty");
-
-		if (this.objectMapper == null) {
-			this.objectMapper = JsonMapper.builder()
-				.addModules(JacksonUtils.instantiateAvailableModules())
-				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-				.build();
-		}
-
 		Assert.notNull(this.responseConverter, "ResponseConverter must not be null");
 		Assert.notNull(this.inputType, "InputType must not be null");
 

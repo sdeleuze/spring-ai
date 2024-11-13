@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackWrapper;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.api.OpenAiApi.ChatModel;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -96,10 +95,11 @@ public class FunctionCallbackWrapper2IT {
 		@Bean
 		public FunctionCallback weatherFunctionInfo() {
 
-			return FunctionCallbackWrapper.builder(new MockWeatherService())
-				.withName("WeatherInfo")
-				.withDescription("Get the weather in location")
-				.withResponseConverter(response -> "" + response.temp() + response.unit())
+			return FunctionCallback.builder(new MockWeatherService())
+				.name("WeatherInfo")
+				.description("Get the weather in location")
+				.inputType(MockWeatherService.Request.class)
+				.responseConverter(response -> "" + response.temp() + response.unit())
 				.build();
 		}
 

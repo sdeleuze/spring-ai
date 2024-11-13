@@ -16,6 +16,7 @@
 
 package org.springframework.ai.model.function;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,6 +78,30 @@ public interface FunctionCallback {
 			throw new UnsupportedOperationException("Function context is not supported!");
 		}
 		return call(functionInput);
+	}
+
+	/**
+	 * Creates a new {@link FunctionCallback.Builder} instance used to build a default
+	 * {@link FunctionCallback} instance.
+	 * @param <I> Function Input type
+	 * @param <O> Function Output type
+	 * @param function Function to be called by the model.
+	 * @return Returns a new {@link FunctionCallback.Builder} instance.
+	 */
+	static <I, O> FunctionCallback.Builder<I, O> builder(Function<I, O> function) {
+		return new DefaultFunctionCallbackBuilder<>(function);
+	}
+
+	/**
+	 * Creates a new {@link FunctionCallback.Builder} instance used to build a default
+	 * {@link FunctionCallback} instance.
+	 * @param <I> Function Input type
+	 * @param <O> Function Output type
+	 * @param biFunction The BiFunction to be called by the model.
+	 * @return Returns a new {@link FunctionCallback.Builder} instance.
+	 */
+	static <I, O> FunctionCallback.Builder<I, O> builder(BiFunction<I, ToolContext, O> biFunction) {
+		return new DefaultFunctionCallbackBuilder<>(biFunction);
 	}
 
 	interface Builder<I, O> {

@@ -50,24 +50,32 @@ public final class FunctionCallbackWrapper<I, O> extends AbstractFunctionCallbac
 				function);
 	}
 
-	public FunctionCallbackWrapper(String name, String description, String inputTypeSchema, ResolvableType inputType,
+	FunctionCallbackWrapper(String name, String description, String inputTypeSchema, ResolvableType inputType,
 			Function<O, String> responseConverter, ObjectMapper objectMapper, BiFunction<I, ToolContext, O> function) {
 		super(name, description, inputTypeSchema, inputType, responseConverter, objectMapper);
 		Assert.notNull(function, "Function must not be null");
 		this.biFunction = function;
 	}
 
+	@Override
+	public O apply(I input, ToolContext context) {
+		return this.biFunction.apply(input, context);
+	}
+
+	/**
+	 * @deprecated use {@link FunctionCallback#builder(BiFunction)} instead.
+	 */
+	@Deprecated
 	public static <I, O> Builder<I, O> builder(BiFunction<I, ToolContext, O> biFunction) {
 		return new Builder<>(biFunction);
 	}
 
+	/**
+	 * @deprecated use {@link FunctionCallback#builder(Function)} instead.
+	 */
+	@Deprecated
 	public static <I, O> Builder<I, O> builder(Function<I, O> function) {
 		return new Builder<>(function);
-	}
-
-	@Override
-	public O apply(I input, ToolContext context) {
-		return this.biFunction.apply(input, context);
 	}
 
 	/**
@@ -95,13 +103,13 @@ public final class FunctionCallbackWrapper<I, O> extends AbstractFunctionCallbac
 
 		private ObjectMapper objectMapper;
 
-		public Builder(BiFunction<I, ToolContext, O> biFunction) {
+		private Builder(BiFunction<I, ToolContext, O> biFunction) {
 			Assert.notNull(biFunction, "Function must not be null");
 			this.biFunction = biFunction;
 			this.function = null;
 		}
 
-		public Builder(Function<I, O> function) {
+		private Builder(Function<I, O> function) {
 			Assert.notNull(function, "Function must not be null");
 			this.biFunction = null;
 			this.function = function;

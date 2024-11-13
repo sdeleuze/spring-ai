@@ -34,7 +34,6 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.function.FunctionCallback;
-import org.springframework.ai.model.function.FunctionCallbackWrapper;
 import org.springframework.ai.model.function.FunctionCallingOptions;
 import org.springframework.ai.model.function.FunctionCallingOptionsBuilder.PortableFunctionCallingOptions;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -140,11 +139,12 @@ public class FunctionCallbackWrapperIT extends BaseOllamaIT {
 		@Bean
 		public FunctionCallback weatherFunctionInfo() {
 
-			return FunctionCallbackWrapper.builder(new MockWeatherService())
-				.withName("WeatherInfo")
-				.withDescription(
+			return FunctionCallback.builder(new MockWeatherService())
+				.name("WeatherInfo")
+				.description(
 						"Find the weather conditions, forecasts, and temperatures for a location, like a city or state.")
-				.withResponseConverter(response -> "" + response.temp() + response.unit())
+				.inputType(MockWeatherService.Request.class)
+				.responseConverter(response -> "" + response.temp() + response.unit())
 				.build();
 		}
 
