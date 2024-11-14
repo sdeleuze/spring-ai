@@ -15,6 +15,7 @@
 */
 package org.springframework.ai.model.function;
 
+import java.lang.reflect.Type;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -28,6 +29,7 @@ import org.springframework.ai.model.ModelOptionsUtils;
 import org.springframework.ai.model.function.FunctionCallback.Builder;
 import org.springframework.ai.model.function.FunctionCallbackContext.SchemaType;
 import org.springframework.ai.util.JacksonUtils;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 
@@ -45,7 +47,7 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 
 	private String description;
 
-	private ResolvableType inputType;
+	private Type inputType;
 
 	private SchemaType schemaType = SchemaType.JSON_SCHEMA;
 
@@ -88,14 +90,14 @@ public class DefaultFunctionCallbackBuilder<I, O> implements FunctionCallback.Bu
 	@Override
 	public Builder<I, O> inputType(Class<?> inputType) {
 		Assert.notNull(inputType, "InputType must not be null");
-		this.inputType = ResolvableType.forClass(inputType);
+		this.inputType = inputType;
 		return this;
 	}
 
 	@Override
-	public Builder<I, O> inputType(ResolvableType inputType) {
+	public Builder<I, O> inputType(ParameterizedTypeReference<?> inputType) {
 		Assert.notNull(inputType, "InputType must not be null");
-		this.inputType = inputType;
+		this.inputType = inputType.getType();
 		return this;
 	}
 

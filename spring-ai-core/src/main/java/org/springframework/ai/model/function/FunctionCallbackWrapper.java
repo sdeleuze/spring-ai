@@ -16,6 +16,7 @@
 
 package org.springframework.ai.model.function;
 
+import java.lang.reflect.Type;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -44,13 +45,7 @@ public final class FunctionCallbackWrapper<I, O> extends AbstractFunctionCallbac
 
 	private final BiFunction<I, ToolContext, O> biFunction;
 
-	private FunctionCallbackWrapper(String name, String description, String inputTypeSchema, Class<I> inputType,
-			Function<O, String> responseConverter, ObjectMapper objectMapper, BiFunction<I, ToolContext, O> function) {
-		this(name, description, inputTypeSchema, ResolvableType.forClass(inputType), responseConverter, objectMapper,
-				function);
-	}
-
-	FunctionCallbackWrapper(String name, String description, String inputTypeSchema, ResolvableType inputType,
+	FunctionCallbackWrapper(String name, String description, String inputTypeSchema, Type inputType,
 			Function<O, String> responseConverter, ObjectMapper objectMapper, BiFunction<I, ToolContext, O> function) {
 		super(name, description, inputTypeSchema, inputType, responseConverter, objectMapper);
 		Assert.notNull(function, "Function must not be null");

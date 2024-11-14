@@ -371,11 +371,11 @@ public abstract class ModelOptionsUtils {
 
 	/**
 	 * Generates JSON Schema (version 2020_12) for the given class.
-	 * @param clazz the class to generate JSON Schema for.
+	 * @param inputType the class to generate JSON Schema for.
 	 * @param toUpperCaseTypeValues if true, the type values are converted to upper case.
 	 * @return the generated JSON Schema as a String.
 	 */
-	public static String getJsonSchema(ResolvableType inputType, boolean toUpperCaseTypeValues) {
+	public static String getJsonSchema(Type inputType, boolean toUpperCaseTypeValues) {
 
 		if (SCHEMA_GENERATOR_CACHE.get() == null) {
 
@@ -395,7 +395,7 @@ public abstract class ModelOptionsUtils {
 		}
 
 		ObjectNode node = SCHEMA_GENERATOR_CACHE.get()
-			.generateSchema(CustomizedTypeReference.forType(inputType).getType());
+			.generateSchema(inputType);
 		if (toUpperCaseTypeValues) { // Required for OpenAPI 3.0 (at least Vertex AI
 			// version of it).
 			toUpperCaseTypeValues(node);
@@ -441,29 +441,6 @@ public abstract class ModelOptionsUtils {
 	 */
 	public static <T> T mergeOption(T runtimeValue, T defaultValue) {
 		return ObjectUtils.isEmpty(runtimeValue) ? defaultValue : runtimeValue;
-	}
-
-	public static class CustomizedTypeReference<T> extends TypeReference<T> {
-
-		private final Type type;
-
-		public CustomizedTypeReference(ParameterizedTypeReference<T> typeRef) {
-			this.type = typeRef.getType();
-		}
-
-		@Override
-		public Type getType() {
-			return this.type;
-		}
-
-		public static <T> CustomizedTypeReference<T> forType(ParameterizedTypeReference<T> typeRef) {
-			return new CustomizedTypeReference<>(typeRef);
-		}
-
-		public static <T> CustomizedTypeReference<T> forType(ResolvableType resolvableType) {
-			return new CustomizedTypeReference<>(ParameterizedTypeReference.forType(resolvableType.getType()));
-		}
-
 	}
 
 }

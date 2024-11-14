@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.model.function.FunctionCallbackContext.SchemaType;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.ResolvableType;
 
 /**
@@ -120,15 +121,15 @@ public interface FunctionCallback {
 		/**
 		 * Function input type. The input type is used to validate the function input
 		 * arguments.
+		 * @see #inputType(ParameterizedTypeReference)
 		 */
 		Builder<I, O> inputType(Class<?> inputType);
 
 		/**
-		 * Function input type. The input type is used to validate the function input
-		 * arguments. The {@link ResolvableType} can be used to provide a generic type
-		 * with parameterized types.
+		 * Function input type retaining generic types. The input type is used to validate the function input
+		 * arguments.
 		 */
-		Builder<I, O> inputType(ResolvableType inputType);
+		Builder<I, O> inputType(ParameterizedTypeReference<?> inputType);
 
 		/**
 		 * Specifies what {@link SchemaType} is used by the AI model to validate the

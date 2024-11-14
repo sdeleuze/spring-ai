@@ -16,6 +16,7 @@
 
 package org.springframework.ai.model.function;
 
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -24,8 +25,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.ai.chat.model.ToolContext;
-import org.springframework.ai.model.ModelOptionsUtils.CustomizedTypeReference;
-import org.springframework.core.ResolvableType;
 import org.springframework.util.Assert;
 
 /**
@@ -49,7 +48,7 @@ abstract class AbstractFunctionCallback<I, O> implements BiFunction<I, ToolConte
 
 	private final String description;
 
-	private final ResolvableType inputType;
+	private final Type inputType;
 
 	private final String inputTypeSchema;
 
@@ -72,28 +71,8 @@ abstract class AbstractFunctionCallback<I, O> implements BiFunction<I, ToolConte
 	 * @param objectMapper Used to convert the function's input and output types to and
 	 * from JSON.
 	 */
-	protected AbstractFunctionCallback(String name, String description, String inputTypeSchema, Class<I> inputType,
-			Function<O, String> responseConverter, ObjectMapper objectMapper) {
-		this(name, description, inputTypeSchema, ResolvableType.forClass(inputType), responseConverter, objectMapper);
-	}
-
-	/**
-	 * Constructs a new {@link AbstractFunctionCallback} with the given name, description,
-	 * input type and default object mapper.
-	 * @param name Function name. Should be unique within the ChatModel's function
-	 * registry.
-	 * @param description Function description. Used as a "system prompt" by the model to
-	 * decide if the function should be called.
-	 * @param inputTypeSchema Used to compute, the argument's Schema (such as JSON Schema
-	 * or OpenAPI Schema)required by the Model's function calling protocol.
-	 * @param inputType Used to compute, the argument's JSON schema required by the
-	 * Model's function calling protocol.
-	 * @param responseConverter Used to convert the function's output type to a string.
-	 * @param objectMapper Used to convert the function's input and output types to and
-	 * from JSON.
-	 */
 	protected AbstractFunctionCallback(String name, String description, String inputTypeSchema,
-			ResolvableType inputType, Function<O, String> responseConverter, ObjectMapper objectMapper) {
+			Type inputType, Function<O, String> responseConverter, ObjectMapper objectMapper) {
 		Assert.notNull(name, "Name must not be null");
 		Assert.notNull(description, "Description must not be null");
 		Assert.notNull(inputType, "InputType must not be null");
@@ -138,9 +117,9 @@ abstract class AbstractFunctionCallback<I, O> implements BiFunction<I, ToolConte
 		return this.andThen(this.responseConverter).apply(request, null);
 	}
 
-	private <T> T fromJson(String json, ResolvableType targetType) {
+	private <T> T fromJson(String json, Type targetType) {
 		try {
-			return this.objectMapper.readValue(json, CustomizedTypeReference.forType(targetType));
+			return this.objectMapper.readValue(json, this.objectMapper.constructType(targetType));
 		}
 		catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
