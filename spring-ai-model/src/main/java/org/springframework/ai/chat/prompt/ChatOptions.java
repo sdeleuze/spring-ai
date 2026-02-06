@@ -152,6 +152,13 @@ public interface ChatOptions extends ModelOptions {
 		Builder topP(Double topP);
 
 		/**
+		 * Initialize the non-null properties of this builder by the one defined in provided options.
+		 * @param options
+		 * @return the builder.
+		 */
+		Builder combineWith(ChatOptions options);
+
+		/**
 		 * Build the {@link ChatOptions}.
 		 * @return the Chat options.
 		 */

@@ -208,7 +208,7 @@ public interface ChatClient {
 
 		ChatClientRequestSpec messages(List<Message> messages);
 
-		<T extends ChatOptions> ChatClientRequestSpec options(T options);
+		<T extends ChatOptions.Builder> ChatClientRequestSpec options(T options);
 
 		ChatClientRequestSpec toolNames(String... toolNames);
 
