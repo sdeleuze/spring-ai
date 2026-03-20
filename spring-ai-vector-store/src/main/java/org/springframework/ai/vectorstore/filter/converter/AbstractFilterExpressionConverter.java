@@ -207,7 +207,7 @@ public abstract class AbstractFilterExpressionConverter implements FilterExpress
 	 * VectorDB query string filters.
 	 * <p>
 	 * Lucene/Elasticsearch query strings require backslash-escaping of special
-	 * characters: {@code + - = ! ( ) { } [ ] ^ " ~ * ? : \ / & | < >}
+	 * characters: {@code + - = ! ( ) { } [ ] ^ " ~ * ? : \ / & | < > } as well as spaces.
 	 * @param value the string value to format
 	 * @param context the context to append the escaped string to
 	 * @see <a href=
@@ -242,6 +242,7 @@ public abstract class AbstractFilterExpressionConverter implements FilterExpress
 				case '|':
 				case '<':
 				case '>':
+				case ' ':
 					context.append('\\').append(c);
 					break;
 				default:

@@ -46,8 +46,8 @@ public class ElasticsearchAiSearchFilterExpressionConverter extends AbstractFilt
 	protected void doExpression(Expression expression, StringBuilder context) {
 		if (expression.type() == Filter.ExpressionType.IN || expression.type() == Filter.ExpressionType.NIN) {
 			context.append(getOperationSymbol(expression));
-			context.append("(");
 			this.convertOperand(expression.left(), context);
+			context.append("(");
 			this.convertOperand(expression.right(), context);
 			context.append(")");
 		}
@@ -88,13 +88,9 @@ public class ElasticsearchAiSearchFilterExpressionConverter extends AbstractFilt
 
 	@Override
 	public void doKey(Key key, StringBuilder context) {
-		var identifier = hasOuterQuotes(key.key()) ? removeOuterQuotes(key.key()) : key.key();
-		var prefixedIdentifier = withMetaPrefix(identifier);
-		context.append(prefixedIdentifier.trim()).append(":");
-	}
-
-	public String withMetaPrefix(String identifier) {
-		return "metadata." + identifier;
+		var fieldPath = "metadata." + key.key().trim();
+		emitLuceneString(fieldPath, context);
+		context.append(':');
 	}
 
 	@Override
@@ -119,7 +115,9 @@ public class ElasticsearchAiSearchFilterExpressionConverter extends AbstractFilt
 			context.append(this.dateFormat.format(date.toInstant()));
 		}
 		else if (value instanceof String text) {
+			context.append("\"");
 			emitLuceneString(text, context);
+			context.append("\"");
 		}
 		else {
 			context.append(value);
