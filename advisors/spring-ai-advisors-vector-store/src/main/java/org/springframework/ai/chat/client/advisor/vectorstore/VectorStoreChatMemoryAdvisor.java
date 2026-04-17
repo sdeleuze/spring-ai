@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2025 the original author or authors.
+ * Copyright 2023-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -121,14 +123,9 @@ public final class VectorStoreChatMemoryAdvisor implements BaseChatMemoryAdvisor
 		String conversationId = getConversationId(request.context(), this.defaultConversationId);
 		String query = request.prompt().getUserMessage() != null ? request.prompt().getUserMessage().getText() : "";
 		int topK = getChatMemoryTopK(request.context());
-		String filter = DOCUMENT_METADATA_CONVERSATION_ID + "=='" + conversationId + "'";
-		var searchRequest = org.springframework.ai.vectorstore.SearchRequest.builder()
-			.query(query)
-			.topK(topK)
-			.filterExpression(filter)
-			.build();
-		java.util.List<org.springframework.ai.document.Document> documents = this.vectorStore
-			.similaritySearch(searchRequest);
+		var filter = new FilterExpressionBuilder().eq(DOCUMENT_METADATA_CONVERSATION_ID, conversationId).build();
+		SearchRequest searchRequest = SearchRequest.builder().query(query).topK(topK).filterExpression(filter).build();
+		List<Document> documents = this.vectorStore.similaritySearch(searchRequest);
 
 		String longTermMemory = documents == null ? ""
 				: documents.stream()
