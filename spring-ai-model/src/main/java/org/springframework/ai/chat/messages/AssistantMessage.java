@@ -95,19 +95,15 @@ public class AssistantMessage extends AbstractMessage implements MediaContent {
 				+ this.textContent + ", metadata=" + this.metadata + "]";
 	}
 
-	public static Builder builder() {
-		return new Builder();
+	public static Builder<?> builder() {
+		return new Builder<>();
 	}
 
 	public record ToolCall(String id, String type, String name, String arguments) {
 
 	}
 
-	public static class Builder extends AbstractBuilder<Builder> {
-
-	}
-
-	public abstract static class AbstractBuilder<B extends AbstractBuilder<B>> {
+	public static class Builder<B extends Builder<B>> {
 
 		protected @Nullable String content;
 
@@ -117,7 +113,7 @@ public class AssistantMessage extends AbstractMessage implements MediaContent {
 
 		protected List<Media> media = List.of();
 
-		protected AbstractBuilder() {
+		protected Builder() {
 		}
 
 		@SuppressWarnings("unchecked")

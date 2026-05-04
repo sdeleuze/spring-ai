@@ -100,44 +100,26 @@ public class DeepSeekAssistantMessage extends AssistantMessage {
 		return new Builder().content(content).prefix(true).reasoningContent(reasoningContent).build();
 	}
 
-	public static class Builder extends AssistantMessage.Builder {
+	// public Builder class exposed to users. Avoids having to deal with noisy generic
+	// parameters.
+	public static class Builder extends AbstractBuilder<Builder> {
+
+	}
+
+	public static class AbstractBuilder<B extends AbstractBuilder<B>> extends AssistantMessage.Builder<B> {
 
 		protected @Nullable Boolean prefix;
 
 		protected @Nullable String reasoningContent;
 
-		@Override
-		public Builder content(@Nullable String content) {
-			super.content(content);
-			return this;
-		}
-
-		@Override
-		public Builder properties(Map<String, Object> properties) {
-			super.properties(properties);
-			return this;
-		}
-
-		@Override
-		public Builder toolCalls(List<ToolCall> toolCalls) {
-			super.toolCalls(toolCalls);
-			return this;
-		}
-
-		@Override
-		public Builder media(List<Media> media) {
-			super.media(media);
-			return this;
-		}
-
-		public Builder prefix(@Nullable Boolean prefix) {
+		public B prefix(@Nullable Boolean prefix) {
 			this.prefix = prefix;
-			return this;
+			return self();
 		}
 
-		public Builder reasoningContent(@Nullable String reasoningContent) {
+		public B reasoningContent(@Nullable String reasoningContent) {
 			this.reasoningContent = reasoningContent;
-			return this;
+			return self();
 		}
 
 		@Override
