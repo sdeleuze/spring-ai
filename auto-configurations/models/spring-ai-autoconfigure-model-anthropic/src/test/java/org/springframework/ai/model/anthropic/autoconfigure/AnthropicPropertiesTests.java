@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link AnthropicConnectionProperties}.
  *
  * @author Soby Chacko
+ * @author Sebastien Deleuze
  */
 class AnthropicPropertiesTests {
 
@@ -37,8 +38,7 @@ class AnthropicPropertiesTests {
 	void connectionProperties() {
 		new ApplicationContextRunner()
 			.withPropertyValues("spring.ai.anthropic.base-url=TEST_BASE_URL", "spring.ai.anthropic.api-key=abc123",
-					"spring.ai.anthropic.chat.options.model=MODEL_XYZ",
-					"spring.ai.anthropic.chat.options.temperature=0.55")
+					"spring.ai.anthropic.chat.model=MODEL_XYZ", "spring.ai.anthropic.chat.temperature=0.55")
 			.withConfiguration(
 					AutoConfigurations.of(AnthropicChatAutoConfiguration.class, ToolCallingAutoConfiguration.class))
 			.run(context -> {
@@ -48,8 +48,8 @@ class AnthropicPropertiesTests {
 				assertThat(connectionProperties.getApiKey()).isEqualTo("abc123");
 				assertThat(connectionProperties.getBaseUrl()).isEqualTo("TEST_BASE_URL");
 
-				assertThat(chatProperties.getOptions().getModel()).isEqualTo("MODEL_XYZ");
-				assertThat(chatProperties.getOptions().getTemperature()).isEqualTo(0.55);
+				assertThat(chatProperties.toOptions().getModel()).isEqualTo("MODEL_XYZ");
+				assertThat(chatProperties.toOptions().getTemperature()).isEqualTo(0.55);
 			});
 	}
 
@@ -58,8 +58,7 @@ class AnthropicPropertiesTests {
 		new ApplicationContextRunner()
 			.withPropertyValues("spring.ai.anthropic.base-url=TEST_BASE_URL", "spring.ai.anthropic.api-key=abc123",
 					"spring.ai.anthropic.chat.base-url=TEST_BASE_URL_2", "spring.ai.anthropic.chat.api-key=456",
-					"spring.ai.anthropic.chat.options.model=MODEL_XYZ",
-					"spring.ai.anthropic.chat.options.temperature=0.55")
+					"spring.ai.anthropic.chat.model=MODEL_XYZ", "spring.ai.anthropic.chat.temperature=0.55")
 			.withConfiguration(
 					AutoConfigurations.of(AnthropicChatAutoConfiguration.class, ToolCallingAutoConfiguration.class))
 			.run(context -> {
@@ -72,8 +71,8 @@ class AnthropicPropertiesTests {
 				assertThat(chatProperties.getApiKey()).isEqualTo("456");
 				assertThat(chatProperties.getBaseUrl()).isEqualTo("TEST_BASE_URL_2");
 
-				assertThat(chatProperties.getOptions().getModel()).isEqualTo("MODEL_XYZ");
-				assertThat(chatProperties.getOptions().getTemperature()).isEqualTo(0.55);
+				assertThat(chatProperties.toOptions().getModel()).isEqualTo("MODEL_XYZ");
+				assertThat(chatProperties.toOptions().getTemperature()).isEqualTo(0.55);
 			});
 	}
 
@@ -81,11 +80,9 @@ class AnthropicPropertiesTests {
 	void chatOptionsTest() {
 		new ApplicationContextRunner()
 			.withPropertyValues("spring.ai.anthropic.api-key=API_KEY", "spring.ai.anthropic.base-url=TEST_BASE_URL",
-					"spring.ai.anthropic.chat.options.model=MODEL_XYZ",
-					"spring.ai.anthropic.chat.options.max-tokens=123",
-					"spring.ai.anthropic.chat.options.stop-sequences=boza,koza",
-					"spring.ai.anthropic.chat.options.temperature=0.55", "spring.ai.anthropic.chat.options.top-p=0.56",
-					"spring.ai.anthropic.chat.options.top-k=100")
+					"spring.ai.anthropic.chat.model=MODEL_XYZ", "spring.ai.anthropic.chat.max-tokens=123",
+					"spring.ai.anthropic.chat.stop-sequences=boza,koza", "spring.ai.anthropic.chat.temperature=0.55",
+					"spring.ai.anthropic.chat.top-p=0.56", "spring.ai.anthropic.chat.top-k=100")
 			.withConfiguration(
 					AutoConfigurations.of(AnthropicChatAutoConfiguration.class, ToolCallingAutoConfiguration.class))
 			.run(context -> {
@@ -94,12 +91,12 @@ class AnthropicPropertiesTests {
 
 				assertThat(connectionProperties.getBaseUrl()).isEqualTo("TEST_BASE_URL");
 				assertThat(connectionProperties.getApiKey()).isEqualTo("API_KEY");
-				assertThat(chatProperties.getOptions().getModel()).isEqualTo("MODEL_XYZ");
-				assertThat(chatProperties.getOptions().getMaxTokens()).isEqualTo(123);
-				assertThat(chatProperties.getOptions().getStopSequences()).contains("boza", "koza");
-				assertThat(chatProperties.getOptions().getTemperature()).isEqualTo(0.55);
-				assertThat(chatProperties.getOptions().getTopP()).isEqualTo(0.56);
-				assertThat(chatProperties.getOptions().getTopK()).isEqualTo(100);
+				assertThat(chatProperties.toOptions().getModel()).isEqualTo("MODEL_XYZ");
+				assertThat(chatProperties.toOptions().getMaxTokens()).isEqualTo(123);
+				assertThat(chatProperties.toOptions().getStopSequences()).contains("boza", "koza");
+				assertThat(chatProperties.toOptions().getTemperature()).isEqualTo(0.55);
+				assertThat(chatProperties.toOptions().getTopP()).isEqualTo(0.56);
+				assertThat(chatProperties.toOptions().getTopK()).isEqualTo(100);
 			});
 	}
 
@@ -107,18 +104,18 @@ class AnthropicPropertiesTests {
 	void webSearchToolProperties() {
 		new ApplicationContextRunner()
 			.withPropertyValues("spring.ai.anthropic.api-key=API_KEY",
-					"spring.ai.anthropic.chat.options.web-search-tool.max-uses=5",
-					"spring.ai.anthropic.chat.options.web-search-tool.allowed-domains=docs.spring.io,github.com",
-					"spring.ai.anthropic.chat.options.web-search-tool.blocked-domains=example.com",
-					"spring.ai.anthropic.chat.options.web-search-tool.user-location.city=San Francisco",
-					"spring.ai.anthropic.chat.options.web-search-tool.user-location.country=US",
-					"spring.ai.anthropic.chat.options.web-search-tool.user-location.region=California",
-					"spring.ai.anthropic.chat.options.web-search-tool.user-location.timezone=America/Los_Angeles")
+					"spring.ai.anthropic.chat.web-search-tool.max-uses=5",
+					"spring.ai.anthropic.chat.web-search-tool.allowed-domains=docs.spring.io,github.com",
+					"spring.ai.anthropic.chat.web-search-tool.blocked-domains=example.com",
+					"spring.ai.anthropic.chat.web-search-tool.user-location.city=San Francisco",
+					"spring.ai.anthropic.chat.web-search-tool.user-location.country=US",
+					"spring.ai.anthropic.chat.web-search-tool.user-location.region=California",
+					"spring.ai.anthropic.chat.web-search-tool.user-location.timezone=America/Los_Angeles")
 			.withConfiguration(
 					AutoConfigurations.of(AnthropicChatAutoConfiguration.class, ToolCallingAutoConfiguration.class))
 			.run(context -> {
 				var chatProperties = context.getBean(AnthropicChatProperties.class);
-				var webSearch = chatProperties.getOptions().getWebSearchTool();
+				var webSearch = chatProperties.toOptions().getWebSearchTool();
 
 				assertThat(webSearch).isNotNull();
 				assertThat(webSearch.getMaxUses()).isEqualTo(5);
